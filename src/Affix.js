@@ -118,7 +118,7 @@ class Affix extends React.Component {
 
   getOffsetTop() {
     if (this.props.offsetTop === 'auto') {
-      return this._offsetTop;
+      return Math.max(this._offsetTop, this.props.viewportOffsetTop);
     }
 
     return this.props.offsetTop;
