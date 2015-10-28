@@ -97,6 +97,10 @@ class Affix extends React.Component {
           position: 'absolute'
         }
       }, () => {
+        if (!this._isMounted) {
+          return;
+        }
+
         this.setState(({affixed}) => {
           if (affixed === 'bottom') {
             // Might have changed due to position update.
