@@ -35,7 +35,7 @@ class Affix extends React.Component {
       ownerDocument(node), 'click', () => this.onDocumentClick()
     );
 
-    this.positionTopBase = getOffset(node).top;
+    this.offsetTop = getOffset(node).top;
     this.onPositionUpdate();
   }
 
@@ -74,11 +74,11 @@ class Affix extends React.Component {
       return;
     }
 
-    const {offsetTop} = this.props;
+    const {viewportOffsetTop} = this.props;
     const scrollTop = getScrollTop(ownerWindow(this));
-    const positionTopMin = scrollTop + offsetTop;
+    const positionTopMin = scrollTop + (viewportOffsetTop || 0);
 
-    if (positionTopMin <= this.positionTopBase) {
+    if (positionTopMin <= this.offsetTop) {
       this.setState({
         affixed: 'top',
         affixStyle: null
@@ -118,7 +118,7 @@ class Affix extends React.Component {
       affixed: 'affix',
       affixStyle: {
         position: 'fixed',
-        top: offsetTop
+        top: viewportOffsetTop
       }
     });
   }
@@ -156,9 +156,9 @@ class Affix extends React.Component {
 
 Affix.propTypes = {
   /**
-   * Pixels to offset from top of screen when calculating position
+   * When affixed, distance from top of viewport
    */
-  offsetTop: React.PropTypes.number,
+  viewportOffsetTop: React.PropTypes.number,
   /**
    * Pixels to offset from bottom of screen when calculating position
    */
@@ -178,7 +178,6 @@ Affix.propTypes = {
 };
 
 Affix.defaultProps = {
-  offsetTop: 0,
   offsetBottom: 0
 };
 
