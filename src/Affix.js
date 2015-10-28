@@ -1,5 +1,4 @@
 import classNames from 'classnames';
-import ownerDocument from 'dom-helpers/ownerDocument';
 import getHeight from 'dom-helpers/query/height';
 import getOffset from 'dom-helpers/query/offset';
 import getOffsetParent from 'dom-helpers/query/offsetParent';
@@ -10,6 +9,7 @@ import ReactDOM from 'react-dom';
 
 import addEventListener from './utils/addEventListener';
 import getDocumentHeight from './utils/getDocumentHeight';
+import ownerDocument from './utils/ownerDocument';
 import ownerWindow from './utils/ownerWindow';
 
 class Affix extends React.Component {
@@ -21,21 +21,21 @@ class Affix extends React.Component {
       affixStyle: null
     };
 
+    this._offsetTop = 0;
     this._needPositionUpdate = false;
   }
 
   componentDidMount() {
-    const node = ReactDOM.findDOMNode(this);
     this._isMounted = true;
 
     this._windowScrollListener = addEventListener(
       window, 'scroll', () => this.onWindowScroll()
     );
     this._documentClickListener = addEventListener(
-      ownerDocument(node), 'click', () => this.onDocumentClick()
+      ownerDocument(this), 'click', () => this.onDocumentClick()
     );
 
-    this.offsetTop = getOffset(node).top;
+    this.recalculateOffsetTop();
     this.onPositionUpdate();
   }
 
@@ -44,6 +44,10 @@ class Affix extends React.Component {
   }
 
   componentDidUpdate() {
+    if (this.state.affixed === 'top') {
+      this.recalculateOffsetTop();
+    }
+
     if (this._needPositionUpdate) {
       this._needPositionUpdate = false;
       this.onPositionUpdate();
@@ -78,7 +82,7 @@ class Affix extends React.Component {
     const scrollTop = getScrollTop(ownerWindow(this));
     const positionTopMin = scrollTop + (viewportOffsetTop || 0);
 
-    if (positionTopMin <= this.offsetTop) {
+    if (positionTopMin <= this.getOffsetTop()) {
       this.setState({
         affixed: 'top',
         affixStyle: null
@@ -123,6 +127,14 @@ class Affix extends React.Component {
     });
   }
 
+  getOffsetTop() {
+    if (this.props.offsetTop != null) {
+      return this.props.offsetTop;
+    }
+
+    return this._offsetTop;
+  }
+
   getPositionTopMax() {
     const node = ReactDOM.findDOMNode(this);
 
@@ -130,6 +142,10 @@ class Affix extends React.Component {
     const height = getHeight(node);
 
     return documentHeight - height - this.props.offsetBottom;
+  }
+
+  recalculateOffsetTop() {
+    this._offsetTop = getOffset(ReactDOM.findDOMNode(this)).top;
   }
 
   render() {
@@ -155,6 +171,10 @@ class Affix extends React.Component {
 }
 
 Affix.propTypes = {
+  /**
+   * Pixels to offset from top of screen when calculating position
+   */
+  offsetTop: React.PropTypes.number,
   /**
    * When affixed, distance from top of viewport
    */
