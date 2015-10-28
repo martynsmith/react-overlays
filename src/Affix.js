@@ -132,11 +132,11 @@ class Affix extends React.Component {
   }
 
   getOffsetTop() {
-    if (this.props.offsetTop != null) {
-      return this.props.offsetTop;
+    if (this.props.offsetTop === 'auto') {
+      return this._offsetTop;
     }
 
-    return this._offsetTop;
+    return this.props.offsetTop;
   }
 
   getPositionTopMax() {
@@ -178,9 +178,12 @@ Affix.propTypes = {
   /**
    * Pixels to offset from top of screen when calculating position
    */
-  offsetTop: React.PropTypes.number,
+  offsetTop: React.PropTypes.oneOfType([
+    React.PropTypes.number,
+    React.PropTypes.oneOf(['auto'])
+  ]),
   /**
-   * When affixed, distance from top of viewport
+   * When affixed, pixels to offset from top of viewport
    */
   viewportOffsetTop: React.PropTypes.number,
   /**
@@ -202,6 +205,7 @@ Affix.propTypes = {
 };
 
 Affix.defaultProps = {
+  offsetTop: 'auto',
   offsetBottom: 0
 };
 
