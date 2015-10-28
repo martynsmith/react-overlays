@@ -18,7 +18,7 @@ class Affix extends React.Component {
 
     this.state = {
       affixed: 'top',
-      affixStyle: null
+      positionStyle: null
     };
 
     this._offsetTop = 0;
@@ -85,7 +85,7 @@ class Affix extends React.Component {
     if (positionTopMin <= this.getOffsetTop()) {
       this.setState({
         affixed: 'top',
-        affixStyle: null
+        positionStyle: null
       });
       return;
     }
@@ -93,7 +93,7 @@ class Affix extends React.Component {
     if (positionTopMin > this.getPositionTopMax()) {
       this.setState({
         affixed: 'bottom',
-        affixStyle: {
+        positionStyle: {
           position: 'absolute'
         }
       }, () => {
@@ -109,7 +109,7 @@ class Affix extends React.Component {
             const parentTop = getOffset(offsetParent).top;
 
             return {
-              affixStyle: {
+              positionStyle: {
                 position: 'absolute',
                 top: positionTopMax - parentTop
               }
@@ -124,7 +124,7 @@ class Affix extends React.Component {
 
     this.setState({
       affixed: 'affix',
-      affixStyle: {
+      positionStyle: {
         position: 'fixed',
         top: viewportOffsetTop
       }
@@ -156,20 +156,24 @@ class Affix extends React.Component {
     const child = React.Children.only(this.props.children);
     const {className, style} = child.props;
 
-    const {affixed, affixStyle} = this.state;
+    const {affixed, positionStyle} = this.state;
 
     let affixClassName;
+    let affixStyle;
     if (affixed === 'top') {
       affixClassName = this.props.topClassName;
+      affixStyle = this.props.topStyle;
     } else if (affixed === 'bottom') {
       affixClassName = this.props.bottomClassName;
+      affixStyle = this.props.bottomStyle;
     } else {
       affixClassName = this.props.affixClassName;
+      affixStyle = this.props.affixStyle;
     }
 
     return React.cloneElement(child, {
       className: classNames(affixClassName, className),
-      style: {...affixStyle, ...style}
+      style: {...positionStyle, ...affixStyle, ...style}
     });
   }
 }
@@ -195,13 +199,25 @@ Affix.propTypes = {
    */
   topClassName: React.PropTypes.string,
   /**
+   * Style to apply when at top
+   */
+  topStyle: React.PropTypes.object,
+  /**
    * CSS class or classes to apply when affixed
    */
   affixClassName: React.PropTypes.string,
   /**
+   * Style to apply when affixed
+   */
+  affixStyle: React.PropTypes.object,
+  /**
    * CSS class or classes to apply when at bottom
    */
-  bottomClassName: React.PropTypes.string
+  bottomClassName: React.PropTypes.string,
+  /**
+   * Style to apply when at bottom
+   */
+  bottomStyle: React.PropTypes.object
 };
 
 Affix.defaultProps = {
