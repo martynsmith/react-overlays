@@ -12,6 +12,10 @@ import getDocumentHeight from './utils/getDocumentHeight';
 import ownerDocument from './utils/ownerDocument';
 import ownerWindow from './utils/ownerWindow';
 
+/**
+ * The `<Affix/>` component toggles `position: fixed;` on and off, emulating
+ * the effect found with `position: sticky;`.
+ */
 class Affix extends React.Component {
   constructor(props, context) {
     super(props, context);
