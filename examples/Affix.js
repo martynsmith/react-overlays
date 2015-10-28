@@ -37,7 +37,7 @@ class AffixExample extends React.Component {
 
     return (
       <div className='affix-example'>
-        <Affix viewportOffsetTop={10} offsetBottom={offsetBottom}>
+        <Affix viewportOffsetTop={15} offsetBottom={offsetBottom}>
           <div className='panel panel-default'>
             <div className='panel-body'>
               I am an affixed element
