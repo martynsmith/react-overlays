@@ -185,4 +185,70 @@ describe('Affix', () => {
       });
     });
   });
+
+  describe('re-rendering optimizations', () => {
+    let renderCount;
+
+    class RenderCounter extends React.Component {
+      render() {
+        ++renderCount;
+        return <div>Content</div>;
+      }
+    }
+
+    beforeEach(() => {
+      renderCount = 0;
+
+      render((
+        <Container>
+          <Affix
+            offsetTop={100}
+            offsetBottom={10000}
+          >
+            <RenderCounter />
+          </Affix>
+        </Container>
+      ), mountPoint);
+    });
+
+    it('should avoid re-rendering at top', (done) => {
+      expect(renderCount).to.equal(1);
+
+      window.scrollTo(0, 50);
+      requestAnimationFrame(() => {
+        expect(renderCount).to.equal(1);
+        done();
+      });
+    });
+
+    it('should avoid re-rendering when affixed', (done) => {
+      expect(renderCount).to.equal(1);
+
+      window.scrollTo(0, 1000);
+      requestAnimationFrame(() => {
+        expect(renderCount).to.equal(2);
+
+        window.scrollTo(0, 2000);
+        requestAnimationFrame(() => {
+          expect(renderCount).to.equal(2);
+          done();
+        });
+      });
+    });
+
+    it('should avoid re-rendering at bottom', (done) => {
+      expect(renderCount).to.equal(1);
+
+      window.scrollTo(0, 15000);
+      requestAnimationFrame(() => {
+        expect(renderCount).to.equal(3);
+
+        window.scrollTo(0, 16000);
+        requestAnimationFrame(() => {
+          expect(renderCount).to.equal(3);
+          done();
+        });
+      });
+    });
+  });
 });

@@ -22,7 +22,8 @@ class Affix extends React.Component {
 
     this.state = {
       affixed: 'top',
-      positionStyle: null
+      position: null,
+      top: null
     };
 
     this._offsetTop = 0;
@@ -81,58 +82,38 @@ class Affix extends React.Component {
     if (!this._isMounted) {
       return;
     }
-
     const {viewportOffsetTop} = this.props;
     const scrollTop = getScrollTop(ownerWindow(this));
     const positionTopMin = scrollTop + (viewportOffsetTop || 0);
 
     if (positionTopMin <= this.getOffsetTop()) {
-      this.setState({
-        affixed: 'top',
-        positionStyle: null
-      });
+      this.updateState('top', null, null);
       return;
     }
 
     if (positionTopMin > this.getPositionTopMax()) {
-      this.setState({
-        affixed: 'bottom',
-        positionStyle: {
-          position: 'absolute'
-        }
-      }, () => {
-        if (!this._isMounted) {
-          return;
-        }
-
-        this.setState(({affixed}) => {
-          if (affixed === 'bottom') {
-            // Might have changed due to position update.
-            const positionTopMax = this.getPositionTopMax();
-            const offsetParent = getOffsetParent(ReactDOM.findDOMNode(this));
-            const parentTop = getOffset(offsetParent).top;
-
-            return {
-              positionStyle: {
-                position: 'absolute',
-                top: positionTopMax - parentTop
-              }
-            };
-          } else {
-            return {};
+      if (this.state.affixed === 'bottom') {
+        this.updateStateAtBottom();
+      } else {
+        // Setting position to `absolute` might change the height of the
+        // affixed element, so only measure its height after we've updated
+        // position.
+        this.setState({
+          affixed: 'bottom',
+          position: 'absolute',
+          top: null
+        }, () => {
+          if (!this._isMounted) {
+            return;
           }
+
+          this.updateStateAtBottom();
         });
-      });
+      }
       return;
     }
 
-    this.setState({
-      affixed: 'affix',
-      positionStyle: {
-        position: 'fixed',
-        top: viewportOffsetTop
-      }
-    });
+    this.updateState('affix', 'fixed', viewportOffsetTop);
   }
 
   getOffsetTop() {
@@ -156,11 +137,32 @@ class Affix extends React.Component {
     this._offsetTop = getOffset(ReactDOM.findDOMNode(this)).top;
   }
 
+  updateState(affixed, position, top) {
+    if (
+      affixed === this.state.affixed &&
+      position === this.state.position &&
+      top === this.state.top
+    ) {
+      return;
+    }
+
+    this.setState({affixed, position, top});
+  }
+
+  updateStateAtBottom() {
+    const positionTopMax = this.getPositionTopMax();
+    const offsetParent = getOffsetParent(ReactDOM.findDOMNode(this));
+    const parentTop = getOffset(offsetParent).top;
+
+    this.updateState('bottom', 'absolute', positionTopMax - parentTop);
+  }
+
   render() {
     const child = React.Children.only(this.props.children);
     const {className, style} = child.props;
 
-    const {affixed, positionStyle} = this.state;
+    const {affixed, position, top} = this.state;
+    const positionStyle = {position, top};
 
     let affixClassName;
     let affixStyle;
@@ -226,6 +228,7 @@ Affix.propTypes = {
 
 Affix.defaultProps = {
   offsetTop: 'auto',
+  viewportOffsetTop: null,
   offsetBottom: 0
 };
 
