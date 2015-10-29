@@ -33,7 +33,7 @@ class Affix extends React.Component {
     this._isMounted = true;
 
     this._windowScrollListener = addEventListener(
-      window, 'scroll', () => this.onWindowScroll()
+      ownerWindow(this), 'scroll', () => this.onWindowScroll()
     );
     this._documentClickListener = addEventListener(
       ownerDocument(this), 'click', () => this.onDocumentClick()

@@ -4,9 +4,11 @@ import React from 'react';
 import mountable from 'react-prop-types/lib/mountable';
 
 import Affix from './Affix';
+import addEventListener from './utils/addEventListener';
 import getContainer from './utils/getContainer';
 import getDocumentHeight from './utils/getDocumentHeight';
 import ownerDocument from './utils/ownerDocument';
+import ownerWindow from './utils/ownerWindow';
 
 /**
  * The `<AutoAffix/>` component wraps `<Affix/>` to automatically calculate
@@ -28,7 +30,7 @@ class AutoAffix extends React.Component {
     this._isMounted = true;
 
     this._windowScrollListener = addEventListener(
-      window, 'scroll', () => this.onWindowScroll()
+      ownerWindow(this), 'scroll', () => this.onWindowScroll()
     );
     this._documentClickListener = addEventListener(
       ownerDocument(this), 'click', () => this.onDocumentClick()
