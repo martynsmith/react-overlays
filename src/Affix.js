@@ -26,7 +26,6 @@ class Affix extends React.Component {
       top: null
     };
 
-    this._offsetTop = 0;
     this._needPositionUpdate = false;
   }
 
@@ -40,7 +39,6 @@ class Affix extends React.Component {
       ownerDocument(this), 'click', () => this.onDocumentClick()
     );
 
-    this.recalculateOffsetTop();
     this.onPositionUpdate();
   }
 
@@ -49,10 +47,6 @@ class Affix extends React.Component {
   }
 
   componentDidUpdate() {
-    if (this.state.affixed === 'top') {
-      this.recalculateOffsetTop();
-    }
-
     if (this._needPositionUpdate) {
       this._needPositionUpdate = false;
       this.onPositionUpdate();
@@ -82,6 +76,7 @@ class Affix extends React.Component {
     if (!this._isMounted) {
       return;
     }
+
     const {viewportOffsetTop} = this.props;
     const scrollTop = getScrollTop(ownerWindow(this));
     const positionTopMin = scrollTop + (viewportOffsetTop || 0);
@@ -118,23 +113,19 @@ class Affix extends React.Component {
 
   getOffsetTop() {
     if (this.props.offsetTop === 'auto') {
-      return Math.max(this._offsetTop, this.props.viewportOffsetTop);
+      return getOffset(this.refs.positioner).top;
     }
 
     return this.props.offsetTop;
   }
 
   getPositionTopMax() {
-    const node = ReactDOM.findDOMNode(this);
+    const node = ReactDOM.findDOMNode(this.refs.child);
 
     const documentHeight = getDocumentHeight(ownerDocument(node));
     const height = getHeight(node);
 
     return documentHeight - height - this.props.offsetBottom;
-  }
-
-  recalculateOffsetTop() {
-    this._offsetTop = getOffset(ReactDOM.findDOMNode(this)).top;
   }
 
   updateState(affixed, position, top) {
@@ -151,7 +142,8 @@ class Affix extends React.Component {
 
   updateStateAtBottom() {
     const positionTopMax = this.getPositionTopMax();
-    const offsetParent = getOffsetParent(ReactDOM.findDOMNode(this));
+    const node = ReactDOM.findDOMNode(this.refs.child);
+    const offsetParent = getOffsetParent(node);
     const parentTop = getOffset(offsetParent).top;
 
     this.updateState('bottom', 'absolute', positionTopMax - parentTop);
@@ -177,10 +169,22 @@ class Affix extends React.Component {
       affixStyle = this.props.affixStyle;
     }
 
-    return React.cloneElement(child, {
+    const affixChild = React.cloneElement(child, {
+      ref: 'child',
       className: classNames(affixClassName, className),
       style: {...positionStyle, ...affixStyle, ...style}
     });
+
+    if (this.props.offsetTop === 'auto') {
+      return (
+        <div>
+          <div ref="positioner" />
+          {affixChild}
+        </div>
+      );
+    }
+
+    return affixChild;
   }
 }
 

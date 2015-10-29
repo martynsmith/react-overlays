@@ -26,7 +26,17 @@ describe('Affix', () => {
     }
   }
 
+  class Content extends React.Component {
+    static renderCount;
+
+    render() {
+      ++Content.renderCount;
+      return <div {...this.props}>Content</div>;
+    }
+  }
+
   beforeEach(() => {
+    Content.renderCount = 0;
     mountPoint = document.createElement('div');
     document.body.appendChild(mountPoint);
   });
@@ -40,13 +50,13 @@ describe('Affix', () => {
   it('should render the affix content', () => {
     let instance = render((
       <Affix>
-        <strong>Message</strong>
+        <Content />
       </Affix>
     ), mountPoint);
 
-    const strongNode =
-      ReactTestUtils.findRenderedDOMComponentWithTag(instance, 'STRONG');
-    expect(strongNode).to.exist;
+    const content =
+      ReactTestUtils.findRenderedComponentWithType(instance, Content);
+    expect(content).to.exist;
   });
 
   describe('fixed offsetTop, no viewportOffsetTop', () => {
@@ -55,6 +65,8 @@ describe('Affix', () => {
     beforeEach(() => {
       const container = render((
         <Container>
+          Placeholder
+
           <Affix
             offsetTop={100}
             offsetBottom={10000}
@@ -65,13 +77,13 @@ describe('Affix', () => {
             bottomClassName="affix-bottom"
             bottomStyle={{color: 'blue'}}
           >
-            <div style={{height: 100}}>Content</div>
+            <Content style={{height: 100}} />
           </Affix>
         </Container>
       ), mountPoint);
 
-      node = React.findDOMNode(ReactTestUtils.findRenderedComponentWithType(
-        container, Affix
+      node = ReactDOM.findDOMNode(ReactTestUtils.findRenderedComponentWithType(
+        container, Content
       ));
     });
 
@@ -116,17 +128,19 @@ describe('Affix', () => {
     beforeEach(() => {
       const container = render((
         <Container>
+          Placeholder
+
           <Affix
             offsetTop={100}
             viewportOffsetTop={50}
           >
-            <div>Content</div>
+            <Content />
           </Affix>
         </Container>
       ), mountPoint);
 
-      node = React.findDOMNode(ReactTestUtils.findRenderedComponentWithType(
-        container, Affix
+      node = ReactDOM.findDOMNode(ReactTestUtils.findRenderedComponentWithType(
+        container, Content
       ));
     });
 
@@ -157,14 +171,15 @@ describe('Affix', () => {
       const container = render((
         <Container>
           <div style={{height: 100}} />
+
           <Affix viewportOffsetTop={0}>
-            <div>Content</div>
+            <Content />
           </Affix>
         </Container>
       ), mountPoint);
 
-      node = React.findDOMNode(ReactTestUtils.findRenderedComponentWithType(
-        container, Affix
+      node = ReactDOM.findDOMNode(ReactTestUtils.findRenderedComponentWithType(
+        container, Content
       ));
     });
 
@@ -187,65 +202,56 @@ describe('Affix', () => {
   });
 
   describe('re-rendering optimizations', () => {
-    let renderCount;
-
-    class RenderCounter extends React.Component {
-      render() {
-        ++renderCount;
-        return <div>Content</div>;
-      }
-    }
-
     beforeEach(() => {
-      renderCount = 0;
-
       render((
         <Container>
+          Placeholder
+
           <Affix
             offsetTop={100}
             offsetBottom={10000}
           >
-            <RenderCounter />
+            <Content />
           </Affix>
         </Container>
       ), mountPoint);
     });
 
     it('should avoid re-rendering at top', (done) => {
-      expect(renderCount).to.equal(1);
+      expect(Content.renderCount).to.equal(1);
 
       window.scrollTo(0, 50);
       requestAnimationFrame(() => {
-        expect(renderCount).to.equal(1);
+        expect(Content.renderCount).to.equal(1);
         done();
       });
     });
 
     it('should avoid re-rendering when affixed', (done) => {
-      expect(renderCount).to.equal(1);
+      expect(Content.renderCount).to.equal(1);
 
       window.scrollTo(0, 1000);
       requestAnimationFrame(() => {
-        expect(renderCount).to.equal(2);
+        expect(Content.renderCount).to.equal(2);
 
         window.scrollTo(0, 2000);
         requestAnimationFrame(() => {
-          expect(renderCount).to.equal(2);
+          expect(Content.renderCount).to.equal(2);
           done();
         });
       });
     });
 
     it('should avoid re-rendering at bottom', (done) => {
-      expect(renderCount).to.equal(1);
+      expect(Content.renderCount).to.equal(1);
 
       window.scrollTo(0, 15000);
       requestAnimationFrame(() => {
-        expect(renderCount).to.equal(3);
+        expect(Content.renderCount).to.equal(3);
 
         window.scrollTo(0, 16000);
         requestAnimationFrame(() => {
-          expect(renderCount).to.equal(3);
+          expect(Content.renderCount).to.equal(3);
           done();
         });
       });
