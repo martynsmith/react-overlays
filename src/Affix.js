@@ -39,49 +39,55 @@ class Affix extends React.Component {
       ownerDocument(this), 'click', () => this.onDocumentClick()
     );
 
-    this.onPositionUpdate();
+    this.onUpdate();
   }
 
-  componentWillReceiveProps() {
-    this._needPositionUpdate = true;
+  componentWillReceiveProps({children}) {
+    if (children !== this.props.children) {
+      // Might need to wait for the new children to render.
+      this._needPositionUpdate = true;
+      return;
+    }
+
+    this.onUpdate();
   }
 
   componentDidUpdate() {
     if (this._needPositionUpdate) {
       this._needPositionUpdate = false;
-      this.onPositionUpdate();
+      this.onUpdate();
     }
   }
 
   componentWillUnmount() {
+    this._isMounted = false;
+
     if (this._windowScrollListener) {
       this._windowScrollListener.remove();
     }
     if (this._documentClickListener) {
       this._documentClickListener.remove();
     }
-
-    this._isMounted = false;
   }
 
   onWindowScroll() {
-    this.onPositionUpdate();
+    this.onUpdate();
   }
 
   onDocumentClick() {
-    requestAnimationFrame(() => this.onPositionUpdate());
+    requestAnimationFrame(() => this.onUpdate());
   }
 
-  onPositionUpdate() {
+  onUpdate() {
     if (!this._isMounted) {
       return;
     }
 
-    const {viewportOffsetTop} = this.props;
+    const {offsetTop, viewportOffsetTop} = this.props;
     const scrollTop = getScrollTop(ownerWindow(this));
     const positionTopMin = scrollTop + (viewportOffsetTop || 0);
 
-    if (positionTopMin <= this.getOffsetTop()) {
+    if (positionTopMin <= offsetTop) {
       this.updateState('top', null, null);
       return;
     }
@@ -90,9 +96,9 @@ class Affix extends React.Component {
       if (this.state.affixed === 'bottom') {
         this.updateStateAtBottom();
       } else {
-        // Setting position to `absolute` might change the height of the
-        // affixed element, so only measure its height after we've updated
-        // position.
+        // Setting position away from `fixed` can change the offset parent of
+        // the affix, so we can't calculate the correct position until after
+        // we've updated its position.
         this.setState({
           affixed: 'bottom',
           position: 'absolute',
@@ -111,19 +117,9 @@ class Affix extends React.Component {
     this.updateState('affix', 'fixed', viewportOffsetTop);
   }
 
-  getOffsetTop() {
-    if (this.props.offsetTop === 'auto') {
-      return getOffset(this.refs.positioner).top;
-    }
-
-    return this.props.offsetTop;
-  }
-
   getPositionTopMax() {
-    const node = ReactDOM.findDOMNode(this.refs.child);
-
-    const documentHeight = getDocumentHeight(ownerDocument(node));
-    const height = getHeight(node);
+    const documentHeight = getDocumentHeight(ownerDocument(this));
+    const height = getHeight(ReactDOM.findDOMNode(this));
 
     return documentHeight - height - this.props.offsetBottom;
   }
@@ -142,8 +138,7 @@ class Affix extends React.Component {
 
   updateStateAtBottom() {
     const positionTopMax = this.getPositionTopMax();
-    const node = ReactDOM.findDOMNode(this.refs.child);
-    const offsetParent = getOffsetParent(node);
+    const offsetParent = getOffsetParent(ReactDOM.findDOMNode(this));
     const parentTop = getOffset(offsetParent).top;
 
     this.updateState('bottom', 'absolute', positionTopMax - parentTop);
@@ -169,22 +164,10 @@ class Affix extends React.Component {
       affixStyle = this.props.affixStyle;
     }
 
-    const affixChild = React.cloneElement(child, {
-      ref: 'child',
+    return React.cloneElement(child, {
       className: classNames(affixClassName, className),
       style: {...positionStyle, ...affixStyle, ...style}
     });
-
-    if (this.props.offsetTop === 'auto') {
-      return (
-        <div>
-          <div ref="positioner" />
-          {affixChild}
-        </div>
-      );
-    }
-
-    return affixChild;
   }
 }
 
@@ -192,10 +175,7 @@ Affix.propTypes = {
   /**
    * Pixels to offset from top of screen when calculating position
    */
-  offsetTop: React.PropTypes.oneOfType([
-    React.PropTypes.number,
-    React.PropTypes.oneOf(['auto'])
-  ]),
+  offsetTop: React.PropTypes.number,
   /**
    * When affixed, pixels to offset from top of viewport
    */
@@ -231,7 +211,7 @@ Affix.propTypes = {
 };
 
 Affix.defaultProps = {
-  offsetTop: 'auto',
+  offsetTop: 0,
   viewportOffsetTop: null,
   offsetBottom: 0
 };

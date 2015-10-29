@@ -13,6 +13,7 @@ import PositionSource from '../webpack/example-loader!./Position';
 import TransitionSource from '../webpack/example-loader!./Transition';
 
 import AffixMetadata from '../webpack/metadata-loader!react-overlays/Affix';
+import AutoAffixMetadata from '../webpack/metadata-loader!react-overlays/AutoAffix';
 import PortalMetadata from '../webpack/metadata-loader!react-overlays/Portal';
 import PositionMetadata from '../webpack/metadata-loader!react-overlays/Position';
 import OverlayMetadata from '../webpack/metadata-loader!react-overlays/Overlay';
@@ -77,7 +78,7 @@ const Example = React.createClass({
             <li><a href='#modals'>Modals</a></li>
             <li><a href='#position'>Position</a></li>
             <li><a href='#overlay'>Overlay</a></li>
-            <li><a href='#affix'>Affix</a></li>
+            <li><a href='#affixes'>Affixes</a></li>
           </ul>
         </article>
         <main className='col-md-10'>
@@ -138,13 +139,18 @@ const Example = React.createClass({
           </section>
           <section>
             <h2 className='page-header'>
-              <Anchor>Affix</Anchor>
+              <Anchor>Affixes</Anchor>
             </h2>
             <p dangerouslySetInnerHTML={{__html: AffixMetadata.Affix.descHtml }}/>
+            <p dangerouslySetInnerHTML={{__html: AutoAffixMetadata.AutoAffix.descHtml }}/>
             <ExampleEditor codeText={AffixSource} />
             <PropTable
               component='Affix'
               metadata={AffixMetadata}
+            />
+            <PropTable
+              component='AutoAffix'
+              metadata={AutoAffixMetadata}
             />
           </section>
         </main>

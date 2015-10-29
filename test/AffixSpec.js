@@ -6,7 +6,7 @@ import Affix from '../src/Affix';
 
 import { render } from './helpers';
 
-describe('Affix', () => {
+describe('<Affix>', () => {
   let mountPoint;
 
   // This makes the window very tall; hopefully enough to exhibit the affix
@@ -20,6 +20,8 @@ describe('Affix', () => {
           top: 0,
           height: 20000
         }}>
+          Placeholder
+
           {this.props.children}
         </div>
       );
@@ -59,14 +61,12 @@ describe('Affix', () => {
     expect(content).to.exist;
   });
 
-  describe('fixed offsetTop, no viewportOffsetTop', () => {
+  describe('no viewportOffsetTop', () => {
     let node;
 
     beforeEach(() => {
       const container = render((
         <Container>
-          Placeholder
-
           <Affix
             offsetTop={100}
             offsetBottom={10000}
@@ -122,14 +122,12 @@ describe('Affix', () => {
     });
   });
 
-  describe('fixed offsetTop, with viewportOffsetTop', () => {
+  describe('with viewportOffsetTop', () => {
     let node;
 
     beforeEach(() => {
       const container = render((
         <Container>
-          Placeholder
-
           <Affix
             offsetTop={100}
             viewportOffsetTop={50}
@@ -164,49 +162,10 @@ describe('Affix', () => {
     });
   });
 
-  describe('auto offsetTop', () => {
-    let node;
-
-    beforeEach(() => {
-      const container = render((
-        <Container>
-          <div style={{height: 100}} />
-
-          <Affix viewportOffsetTop={0}>
-            <Content />
-          </Affix>
-        </Container>
-      ), mountPoint);
-
-      node = ReactDOM.findDOMNode(ReactTestUtils.findRenderedComponentWithType(
-        container, Content
-      ));
-    });
-
-    it('should render correctly at top', (done) => {
-      window.scrollTo(0, 99);
-
-      requestAnimationFrame(() => {
-        expect(node.style.position).to.not.be.ok;
-        done();
-      });
-    });
-
-    it('should affix correctly', (done) => {
-      window.scrollTo(0, 101);
-      requestAnimationFrame(() => {
-        expect(node.style.position).to.equal('fixed');
-        done();
-      });
-    });
-  });
-
   describe('re-rendering optimizations', () => {
     beforeEach(() => {
       render((
         <Container>
-          Placeholder
-
           <Affix
             offsetTop={100}
             offsetBottom={10000}
