@@ -37,6 +37,17 @@ class AutoAffix extends React.Component {
     this.onUpdate();
   }
 
+  componentWillReceiveProps() {
+    this._needPositionUpdate = true;
+  }
+
+  componentDidUpdate() {
+    if (this._needPositionUpdate) {
+      this._needPositionUpdate = false;
+      this.onUpdate();
+    }
+  }
+
   componentWillUnmount() {
     this._isMounted = false;
 
@@ -93,6 +104,8 @@ class AutoAffix extends React.Component {
       this.props;
     const {offsetTop, offsetBottom, width} = this.state;
 
+    const effectiveOffsetTop = Math.max(offsetTop, viewportOffsetTop || 0);
+
     let {affixStyle, bottomStyle} = this.props;
     if (autoWidth) {
       affixStyle = {width, ...affixStyle};
@@ -104,7 +117,7 @@ class AutoAffix extends React.Component {
         <div ref="positioner" />
 
         <Affix
-          offsetTop={Math.max(offsetTop, viewportOffsetTop || 0)}
+          offsetTop={effectiveOffsetTop}
           viewportOffsetTop={viewportOffsetTop}
           offsetBottom={offsetBottom}
           affixStyle={affixStyle}

@@ -42,14 +42,8 @@ class Affix extends React.Component {
     this.onUpdate();
   }
 
-  componentWillReceiveProps({children}) {
-    if (children !== this.props.children) {
-      // Might need to wait for the new children to render.
-      this._needPositionUpdate = true;
-      return;
-    }
-
-    this.onUpdate();
+  componentWillReceiveProps() {
+    this._needPositionUpdate = true;
   }
 
   componentDidUpdate() {
