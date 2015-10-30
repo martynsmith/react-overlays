@@ -4,7 +4,7 @@ import AutoAffix from 'react-overlays/lib/AutoAffix';
 class AffixExample extends React.Component {
   render() {
     return (
-      <div ref="container" className='affix-example'>
+      <div className='affix-example'>
         <AutoAffix viewportOffsetTop={15} container={this}>
           <div className='panel panel-default'>
             <div className='panel-body'>
